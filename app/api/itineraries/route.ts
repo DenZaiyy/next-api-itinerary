@@ -19,5 +19,25 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-    const { name, description, LocationItinerary } = await req.json();
+    const { title, description } = await req.json();
+
+    if (!title || !description) {
+        return new NextResponse("Missing fields", { status: 400 });
+    }
+
+    try {
+        const itinerary = await db.itinerary.create({
+            data: {
+                title: title,
+                description: description
+            }
+        });
+
+        return NextResponse.json(itinerary);
+    } catch (err) {
+        if (err instanceof Error) {
+            console.error("[ITINERARIES_POST] ", err.message);
+        }
+        return new NextResponse("Internal Error", { status: 500 });
+    }
 }
