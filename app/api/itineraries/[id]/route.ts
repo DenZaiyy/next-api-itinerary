@@ -71,8 +71,8 @@ export async function PUT(req: NextRequest, { params } : IItineraryProps) {
     }
 }
 
-export async function DELETE(req: NextRequest, { params } : { params: { id: string}}) {
-    const { id } = params;
+export async function DELETE(req: NextRequest, { params } : IItineraryProps) {
+    const { id } = await params;
 
     try {
         const itinerary = await db.itinerary.delete({ where: { id: id } });
