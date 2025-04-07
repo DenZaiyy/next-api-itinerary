@@ -34,8 +34,8 @@ export async function POST(req: NextRequest) {
             data: {
                 name: name,
                 description: description,
-                latitude: latitude,
-                longitude: longitude,
+                latitude: parseFloat(latitude),
+                longitude: parseFloat(longitude),
                 address: address
             }
         });
