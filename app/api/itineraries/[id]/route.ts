@@ -5,12 +5,17 @@ interface IItineraryProps {
     params: Promise<{ id: string }>;
 }
 
-export async function GET(req: NextRequest, { params } : IItineraryProps) {
-    const { id } = await params;
+interface IItineraryItemsProps {
+    id: string;
+    order: number;
+}
+
+export async function GET(req: NextRequest, {params}: IItineraryProps) {
+    const {id} = await params;
 
     try {
         const itinerary = await db.itinerary.findFirst({
-            where: { id: id},
+            where: {id: id},
             include: {
                 LocationItinerary: {
                     include: {
@@ -28,54 +33,47 @@ export async function GET(req: NextRequest, { params } : IItineraryProps) {
         }
 
         return NextResponse.json(itinerary);
-    } catch(err) {
+    } catch (err) {
         if (err instanceof Error) {
-            console.error("[ITINERARIES_GET] ",err.message);
+            console.error("[ITINERARIES_GET] ", err.message);
         }
         return new NextResponse("Internal Error", {status: 500});
     }
 }
 
-export async function PUT(req: NextRequest, { params } : IItineraryProps) {
-    const { id } = await params;
-    const { title, description, LocationItinerary } = await req.json();
+export async function PUT(req: NextRequest, {params}: IItineraryProps) {
+    const {id} = await params;
+    const {items} = await req.json();
 
     try {
-        const itinerary = await db.itinerary.update({
-            where: { id: id },
-            data: {
-                title: title,
-                description: description,
-                LocationItinerary: {
-                    create: LocationItinerary
-                }
-            },
-            include: {
-                LocationItinerary: {
-                    include: {
-                        location: true
-                    },
-                    orderBy: {
-                        order: "asc"
+        const updated = items.map(async (item: IItineraryItemsProps) => {
+            await db.locationItinerary.update({
+                where: {
+                    id: item.id,
+                    itinerary: {
+                        id: id
                     }
+                },
+                data: {
+                    order: item.order
                 }
-            }
-        });
+            });
+        })
 
-        return NextResponse.json(itinerary);
-    } catch(err) {
+        return NextResponse.json({success: true, updated});
+    } catch (err) {
         if (err instanceof Error) {
-            console.error("[ITINERARIES_PUT] ",err.message);
+            console.error("[ITINERARIES_PUT] ", err.message);
         }
         return new NextResponse("Internal Error", {status: 500});
     }
 }
 
-export async function DELETE(req: NextRequest, { params } : IItineraryProps) {
-    const { id } = await params;
+export async function DELETE(req: NextRequest, {params}: IItineraryProps) {
+    const {id} = await params;
 
     try {
-       /* const itinerary = await db.itinerary.delete({ where: { id: id } });*/
+        /* const itinerary = await db.itinerary.delete({ where: { id: id } });*/
 
         const itinerary = await db.$transaction([db.locationItinerary.deleteMany({
             where: {
@@ -84,14 +82,14 @@ export async function DELETE(req: NextRequest, { params } : IItineraryProps) {
                 }
             }
         }),
-        db.itinerary.delete({
-            where: { id: id }
-        })])
+            db.itinerary.delete({
+                where: {id: id}
+            })])
 
         return NextResponse.json(itinerary);
-    } catch(err) {
+    } catch (err) {
         if (err instanceof Error) {
-            console.error("[ITINERARIES_DELETE] ",err.message);
+            console.error("[ITINERARIES_DELETE] ", err.message);
         }
         return new NextResponse("Internal Error", {status: 500});
     }
