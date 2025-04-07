@@ -75,7 +75,19 @@ export async function DELETE(req: NextRequest, { params } : IItineraryProps) {
     const { id } = await params;
 
     try {
-        const itinerary = await db.itinerary.delete({ where: { id: id } });
+       /* const itinerary = await db.itinerary.delete({ where: { id: id } });*/
+
+        const itinerary = await db.$transaction([db.locationItinerary.deleteMany({
+            where: {
+                itinerary: {
+                    id: id
+                }
+            }
+        }),
+        db.itinerary.delete({
+            where: { id: id }
+        })])
+
         return NextResponse.json(itinerary);
     } catch(err) {
         if (err instanceof Error) {
