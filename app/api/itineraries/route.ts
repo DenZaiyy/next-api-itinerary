@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
         title,
         description,
         locations,
-    }: { title: string; description: string; locations: ILocation } =
+    }: { title: string; description: string; locations: ILocationItinerary } =
         await req.json();
 
     console.log("Locations: ", locations);
