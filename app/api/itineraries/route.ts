@@ -18,13 +18,14 @@ export async function GET() {
     }
 }
 
+interface IPostProps {
+    title: string;
+    description: string;
+    locations: ILocationItinerary | ILocationItinerary[];
+}
+
 export async function POST(req: NextRequest) {
-    const {
-        title,
-        description,
-        locations,
-    }: { title: string; description: string; locations: ILocationItinerary } =
-        await req.json();
+    const { title, description, locations }: IPostProps = await req.json();
 
     console.log("Locations: ", locations);
 
